@@ -8,22 +8,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserHandler struct {
+type userHandler struct {
 	userService user.Service
 }
 
-func NewUserHandler(userService user.Service) *UserHandler {
-	return &UserHandler{userService}
+func NewUserHandler(userService user.Service) *userHandler {
+	return &userHandler{userService}
 }
 
-func (h *UserHandler) RegisterUser(c *gin.Context) {
+func (h *userHandler) RegisterUser(c *gin.Context) {
 	var input user.RegisterUserInput
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
 		errors := helper.FormatValidationError(err)
 		errorMessage := gin.H{"errors": errors}
-		response := helper.APIResponse("Account register failed!", http.StatusBadRequest, "error", errorMessage)
-		c.JSON(http.StatusBadRequest, response)
+		response := helper.APIResponse("Account register failed!", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
 
@@ -40,4 +40,32 @@ func (h *UserHandler) RegisterUser(c *gin.Context) {
 	response := helper.APIResponse("Account has been created", http.StatusOK, "success", formatter)
 
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) Login(c *gin.Context) {
+
+	var input user.LoginInput
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+		response := helper.APIResponse("Login failed!", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	loginUser, err := h.userService.Login(input)
+
+	if err != nil {
+		errorMessage := gin.H{"errors": err.Error()}
+		response := helper.APIResponse("Login failed!", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+	formatter := user.FormatUser(loginUser, "tokentokentokentokentokentoken")
+
+	response := helper.APIResponse("Succesfully login", http.StatusOK, "success", formatter)
+
+	c.JSON(http.StatusOK, response)
+
 }
