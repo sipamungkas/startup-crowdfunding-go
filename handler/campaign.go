@@ -81,3 +81,45 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 
 }
+
+// user masukkan ipnut : form dan uri
+// handler
+// mapping dari input ke input struct ( dari user dan uri ) -> passing ke service layer
+// service -> logika untuk update => findByID,tangkap parameter, kriim ke ipnut struct
+// repository update
+
+func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
+	var inputID campaign.GetCampaignDetailInput
+
+	err := c.ShouldBindUri(&inputID)
+
+	if err != nil {
+		response := helper.APIResponse("Failed to update campaign", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	var inputData campaign.CreateCampaignInput
+
+	err = c.ShouldBindJSON(&inputData)
+	currentUser := c.MustGet("currentUser").(user.User)
+	inputData.User = currentUser
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Failed to update campaign", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	updatedCampaign, err := h.service.UpdateCampaign(inputID, inputData)
+	if err != nil {
+		response := helper.APIResponse("Failed to update campaign", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	response := helper.APIResponse("Success to update campaign", http.StatusOK, "success", updatedCampaign)
+	c.JSON(http.StatusOK, response)
+	return
+}
