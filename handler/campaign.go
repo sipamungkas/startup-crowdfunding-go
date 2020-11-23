@@ -53,9 +53,6 @@ func (h *campaignHandler) GetCampaign(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// ambil parameter input dari user diubah ke input struct
-// ambil UserID dari current user/handler
-
 func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	var input campaign.CreateCampaignInput
 	err := c.ShouldBindJSON(&input)
