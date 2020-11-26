@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bwastartup/helper"
+	"bwastartup/payment"
 	"bwastartup/transaction"
 	"bwastartup/user"
 	"net/http"
@@ -10,11 +11,12 @@ import (
 )
 
 type transactionHandler struct {
-	service transaction.Service
+	service        transaction.Service
+	paymentService payment.Service
 }
 
-func NewTransactionHandler(service transaction.Service) *transactionHandler {
-	return &transactionHandler{service}
+func NewTransactionHandler(service transaction.Service, paymentService payment.Service) *transactionHandler {
+	return &transactionHandler{service, paymentService}
 }
 
 func (h *transactionHandler) GetCampaignTransactions(c *gin.Context) {
@@ -93,3 +95,25 @@ func (h *transactionHandler) CreateTransaction(c *gin.Context) {
 // mapping ke input struct
 // panggil service buat transksi, setelah create data pakai repository, panggil snapgateway midtrans
 // panggil repo create new transactions data
+
+func (h *transactionHandler) GetNotification(c *gin.Context) {
+	var input transaction.TransactionNotificationInput
+	err := c.ShouldBindJSON(&input)
+
+	if err != nil {
+		response := helper.APIResponse("Failed to create transaction", http.StatusUnprocessableEntity, "error", nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+
+		return
+	}
+
+	err = h.paymentService.ProcessPayment(input)
+	if err != nil {
+		response := helper.APIResponse("Failed to create transaction", http.StatusUnprocessableEntity, "error", nil)
+		c.JSON(http.StatusUnprocessableEntity, response)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, input)
+}
