@@ -88,12 +88,6 @@ func (h *transactionHandler) CreateTransaction(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// ada input dari user (nominal uang)
-// handler tangkap input
-// mapping ke input struct
-// panggil service buat transksi, setelah create data pakai repository, panggil snapgateway midtrans
-// panggil repo create new transactions data
-
 func (h *transactionHandler) GetNotification(c *gin.Context) {
 	var input transaction.TransactionNotificationInput
 	err := c.ShouldBindJSON(&input)
